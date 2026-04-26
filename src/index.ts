@@ -1,12 +1,31 @@
 import calculation from "./calculation.js";
+
+type ActionKey = "delete" | "clear" | "pi" | "x2" | "1/x" | "fact" | "calculate";
+
 class Calculator {
-  constructor(inputSelector, gridSelector, history, menuSelector, mainSelector, historyNavSelector) {
-    this.input = document.querySelector(inputSelector);
-    this.grid = document.querySelector(gridSelector);
-    this.history = document.querySelector(history);
-    this.menu = document.querySelector(menuSelector);
-    this.main = document.querySelector(mainSelector);
-    this.nav = document.querySelector(historyNavSelector);
+  input: HTMLInputElement;
+  grid: HTMLElement;
+  history: HTMLElement;
+  menu: HTMLElement;
+  main: HTMLElement;
+  nav: HTMLElement;
+  actions: Record<ActionKey, () => void>;
+
+  constructor(
+    inputSelector: string,
+    gridSelector: string,
+    historySelector: string,
+    menuSelector: string,
+    mainSelector: string,
+    historyNavSelector: string
+  ) {
+    this.input = document.querySelector(inputSelector) as HTMLInputElement;
+    this.grid = document.querySelector(gridSelector) as HTMLElement;
+    this.history = document.querySelector(historySelector) as HTMLElement;
+    this.menu = document.querySelector(menuSelector) as HTMLElement;
+    this.main = document.querySelector(mainSelector) as HTMLElement;
+    this.nav = document.querySelector(historyNavSelector) as HTMLElement;
+
     this.grid.addEventListener("click", this.handleClick.bind(this));
     document.addEventListener("keydown", this.handleKeyDown.bind(this));
     this.menu.addEventListener("click", this.toggleMenu.bind(this));
@@ -17,16 +36,15 @@ class Calculator {
       pi: () => this.append(Math.PI.toFixed(6)),
       x2: () => this.append("^2"),
       "1/x": () => this.inverse(),
-      // abs: () => this.wrap("|"),
-      // sqrt: () => this.append("sqrt"),
       fact: () => this.append("!"),
       calculate: () => this.calculate(),
     };
+
     this.showHistory();
   }
 
-  handleClick(e) {
-    const button = e.target.closest("button");
+  handleClick(e: MouseEvent) {
+    const button = (e.target as HTMLElement).closest("button") as HTMLButtonElement | null;
     if (!button) return;
 
     const val = button.dataset.value ?? button.dataset.action;
@@ -36,14 +54,14 @@ class Calculator {
       this.input.value = "";
     }
 
-    if (this.actions[val]) {
-      this.actions[val]();
+    if ((this.actions as any)[val]) {
+      (this.actions as any)[val]();
     } else {
       this.append(val);
     }
   }
 
-  append(val) {
+  append(val: string) {
     this.input.value += val;
   }
 
@@ -60,15 +78,15 @@ class Calculator {
     this.input.value = `1/(${this.input.value})`;
   }
 
-  wrap(symbol) {
+  wrap(symbol: string) {
     this.input.value = `${symbol}${this.input.value}${symbol}`;
   }
 
   calculate() {
     const question = this.input.value;
     try {
-      this.input.value = calculation(this.input.value);
-    } catch (err) {
+      this.input.value = calculation(this.input.value).toString();
+    } catch (err: any) {
       this.input.value = err.message;
     } finally {
       sessionStorage.setItem(question, this.input.value);
@@ -76,7 +94,7 @@ class Calculator {
     }
   }
 
-  handleKeyDown(e) {
+  handleKeyDown(e: KeyboardEvent) {
     let key = e.key;
     if (/^[0-9+\-/*%^()]+$/.test(key)) {
       if (this.input.value === "0") {
@@ -102,18 +120,16 @@ class Calculator {
 
     for (let i = 0; i < sessionStorage.length; i++) {
       let key = sessionStorage.key(i);
-
       if (key === "IsThisFirstTime_Log_From_LiveServer") continue;
-
-      let value = sessionStorage.getItem(key);
+      let value = sessionStorage.getItem(key!);
 
       this.history.innerHTML += `
-      <div>
-        <b>Question:</b> ${key} <br>
-        <b>Result:</b> ${value}
-      </div>
-      <br>
-    `;
+        <div>
+          <b>Question:</b> ${key} <br>
+          <b>Result:</b> ${value}
+        </div>
+        <br>
+      `;
 
       isEmpty = false;
     }
@@ -123,23 +139,23 @@ class Calculator {
   }
 
   toggleMenu() {
-    this.history.parentNode.classList.add("history--active");
+    (this.history.parentNode as HTMLElement).classList.add("history--active");
     this.main.classList.add("calculator--absolute");
     const li = document.createElement("li");
     li.innerHTML = `<a href="#" id="close-history">X</a>`;
     this.nav.prepend(li);
     handleCloseHistory();
+
     function handleCloseHistory() {
-      const closeBtn = document.querySelector("#close-history");
+      const closeBtn = document.querySelector("#close-history") as HTMLElement;
       closeBtn.addEventListener("click", () => {
         closeBtn.remove();
         closeBtn.removeEventListener("click", handleCloseHistory);
-        document.querySelector(".history--active").classList.remove("history--active");
-        document.querySelector(".calculator--absolute").classList.remove("calculator--absolute");
+        document.querySelector(".history--active")?.classList.remove("history--active");
+        document.querySelector(".calculator--absolute")?.classList.remove("calculator--absolute");
       });
     }
   }
-
 }
 
 const c = new Calculator(
