@@ -7,8 +7,9 @@ declare global {
 Array.prototype.isEmpty = function <T>(this: T[]): boolean {
   return this.length === 0;
 };
+type Operator = "+" | "-" | "*" | "/" | "%" | "^" | "(" | ")";
 
-const precedence = new Map<string, number>([
+const precedence = new Map<Operator, number>([
   ["^", 3],
   ["*", 2],
   ["/", 2],
@@ -16,13 +17,12 @@ const precedence = new Map<string, number>([
   ["+", 1],
   ["-", 1],
   ["(", 0],
-]);
+]as const);
 
-type Operator = "+" | "-" | "*" | "/" | "%" | "^" | "(" | ")";
 
 function calculation(input: string): number {
   const inputArr: string[] = input.split("");
-  const operator: (string | Operator)[] = [];
+  const operator: Operator[] = [];
   const operand: number[] = [];
   let expectingOperand: boolean = true;
 
@@ -140,15 +140,22 @@ function calculation(input: string): number {
     operand.push(factorial(val));
   }
 
-  function handleOperations(char: string): void {
-    while (
-      operator.length &&
-      operator[operator.length - 1] !== "(" &&
-      (precedence.get(operator[operator.length - 1] as string) ?? 0) >= (precedence.get(char) ?? 0)
-    ) {
-      const op = operator.pop();
-      applyBinary(op as string);
+  function handleOperations(char: Operator): void {
+  while (operator.length) {
+    const top = operator[operator.length - 1]; 
+
+    if (top === undefined || top === "(") break;
+
+    const topPrecedence = precedence.get(top) ?? 0;
+    const currPrecedence = precedence.get(char) ?? 0;
+
+    if (topPrecedence >= currPrecedence) {
+      const op = operator.pop()!; 
+      applyBinary(op);
+    } else {
+      break;
     }
+  }
 
     operator.push(char);
   }
