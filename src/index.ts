@@ -171,7 +171,9 @@ function showHistory() {
     for (let i = 0; i < sessionStorage.length; i++) {
         let key = sessionStorage.key(i);
         if (key === "IsThisFirstTime_Log_From_LiveServer") continue;
-        let value = sessionStorage.getItem(key!);
+        let value = function getValue(key: string) {
+            return sessionStorage.getItem(key);
+        };
 
         history.innerHTML += `
       <div>
@@ -189,39 +191,39 @@ function showHistory() {
 }
 
 function toggleMenu() {
-  try{
-    let historyElement = <HTMLElement>history.parentNode;
-    if (!(historyElement instanceof HTMLElement)) {
-        throw new Error("Element not found");
-    }
-    historyElement.classList.add("history--active");
-    main.classList.add("calculator--absolute");
-    const li = document.createElement("li");
-    li.innerHTML = `<a href="#" id="close-history">X</a>`;
-    nav.prepend(li);
-    handleCloseHistory();
-
-    function handleCloseHistory() {
-        const closeBtn = <HTMLElement>document.querySelector("#close-history");
-        if (!(closeBtn instanceof HTMLElement)) {
-            throw new Error("close Button not found");
+    try {
+        let historyElement = <HTMLElement>history.parentNode;
+        if (!(historyElement instanceof HTMLElement)) {
+            throw new Error("Element not found");
         }
-        closeBtn.addEventListener("click", () => {
-            closeBtn.remove();
-            closeBtn.removeEventListener("click", handleCloseHistory);
-            document
-                .querySelector(".history--active")
-                ?.classList.remove("history--active");
-            document
-                .querySelector(".calculator--absolute")
-                ?.classList.remove("calculator--absolute");
-        });
+        historyElement.classList.add("history--active");
+        main.classList.add("calculator--absolute");
+        const li = document.createElement("li");
+        li.innerHTML = `<a href="#" id="close-history">X</a>`;
+        nav.prepend(li);
+        handleCloseHistory();
+
+        function handleCloseHistory() {
+            const closeBtn = <HTMLElement>(
+                document.querySelector("#close-history")
+            );
+            if (!(closeBtn instanceof HTMLElement)) {
+                throw new Error("close Button not found");
+            }
+            closeBtn.addEventListener("click", () => {
+                closeBtn.remove();
+                closeBtn.removeEventListener("click", handleCloseHistory);
+                document
+                    .querySelector(".history--active")
+                    ?.classList.remove("history--active");
+                document
+                    .querySelector(".calculator--absolute")
+                    ?.classList.remove("calculator--absolute");
+            });
+        }
+    } catch (err) {
+        console.log(err);
     }
-  }
-  catch(err)
-  {
-    console.log(err)
-  }
 }
 
 initializeCalculator(

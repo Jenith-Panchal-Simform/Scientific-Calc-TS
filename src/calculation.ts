@@ -28,7 +28,7 @@ function calculation(input: string): number {
 
   try {
     for (let i = 0; i < inputArr.length; i++) {
-      let char: string = inputArr[i]!;
+      let char: string = inputArr[i] ?? "";
 
       if (char === " ") continue;
 
