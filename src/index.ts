@@ -137,7 +137,7 @@ function calculate() {
     try {
         input.value = calculation(input.value).toString();
     } catch (err: unknown) {
-         if (err instanceof Error) {
+        if (err instanceof Error) {
             input.value = err.message;
         } else {
             input.value = "Something went wrong";
@@ -171,32 +171,39 @@ function getValue(key: string) {
 }
 function showHistory() {
     try {
-        history.innerHTML = "";
-
+        while (history.firstChild) {
+            history.removeChild(history.firstChild);
+        }
         let isEmpty = true;
-
         for (let i = 0; i < sessionStorage.length; i++) {
-            let key = sessionStorage.key(i);
+            const key = sessionStorage.key(i);
             if (key === "IsThisFirstTime_Log_From_LiveServer") continue;
             if (!key) {
                 throw new Error("Key not Found");
             }
-            let value = getValue(key);
-
-            history.innerHTML += `
-      <div>
-        <b>Question:</b> ${key} <br>
-        <b>Result:</b> ${value}
-      </div>
-      <br>
-    `;
+            const value = getValue(key);
+            const container = document.createElement("div");
+            const qLabel = document.createElement("b");
+            qLabel.textContent = "Question:";
+            container.appendChild(qLabel);
+            container.appendChild(document.createTextNode(` ${key}`));
+            container.appendChild(document.createElement("br"));
+            const rLabel = document.createElement("b");
+            rLabel.textContent = "Result:";
+            container.appendChild(rLabel);
+            container.appendChild(document.createTextNode(` ${value}`));
+            history.appendChild(container);
+            history.appendChild(document.createElement("br"));
 
             isEmpty = false;
         }
+
         if (isEmpty) {
-            history.innerHTML = "The history is empty";
+            const emptyMsg = document.createElement("p");
+            emptyMsg.textContent = "The history is empty";
+            history.appendChild(emptyMsg);
         }
-    } catch (err) {
+    } catch (err: unknown) {
         console.log(err);
     }
 }
@@ -210,7 +217,12 @@ function toggleMenu() {
         historyElement.classList.add("history--active");
         main.classList.add("calculator--absolute");
         const li = document.createElement("li");
-        li.innerHTML = `<a href="#" id="close-history">X</a>`;
+        const a = document.createElement("a");
+        a.href = "#";
+        a.id = "close-history";
+        a.textContent = "X";
+
+        li.appendChild(a);
         nav.prepend(li);
         handleCloseHistory();
 

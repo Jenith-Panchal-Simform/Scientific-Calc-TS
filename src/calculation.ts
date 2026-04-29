@@ -87,7 +87,7 @@ function calculation(input: string): number {
             throw new Error("Invalid expression");
         }
         let val = operand[0];
-        if (!val) throw new Error("Operand not found");
+        if (val == undefined) throw new Error("Operand not found");
         return val;
     } catch (err) {
         const error = err instanceof Error ? err.message : String(err);
