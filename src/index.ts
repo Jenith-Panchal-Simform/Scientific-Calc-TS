@@ -136,8 +136,12 @@ function calculate() {
     const question = input.value;
     try {
         input.value = calculation(input.value).toString();
-    } catch (err: any) {
-        input.value = err.message;
+    } catch (err: unknown) {
+         if (err instanceof Error) {
+            input.value = err.message;
+        } else {
+            input.value = "Something went wrong";
+        }
     } finally {
         sessionStorage.setItem(question, input.value);
         showHistory();

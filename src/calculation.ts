@@ -42,7 +42,9 @@ function calculation(input: string): number {
                 if (char === "+" || char === "-") {
                     num += char;
                     i++;
-                    char = inputArr[i]!;
+                    let val = inputArr[i];
+                    if (!val) throw new Error("Value not found from input");
+                    char = val;
                 }
                 if (isNaN(Number(char)) && char !== ".") {
                     throw new Error("Invalid number");
@@ -84,59 +86,69 @@ function calculation(input: string): number {
         if (operand.length !== 1) {
             throw new Error("Invalid expression");
         }
-
-        return operand[0]!;
+        let val = operand[0];
+        if (!val) throw new Error("Operand not found");
+        return val;
     } catch (err) {
         const error = err instanceof Error ? err.message : String(err);
         throw new Error(error);
     }
 
     function handleCalculator(char: string): void {
-        switch (char) {
-            case "+":
-            case "-":
-            case "/":
-            case "*":
-            case "%":
-            case "^":
-                if (expectingOperand) {
-                    throw new Error("Invalid expression");
-                }
-                handleOperations(char);
-                expectingOperand = true;
-                break;
+        try {
+            switch (char) {
+                case "+":
+                case "-":
+                case "/":
+                case "*":
+                case "%":
+                case "^":
+                    if (expectingOperand) {
+                        throw new Error("Invalid expression");
+                    }
+                    handleOperations(char);
+                    expectingOperand = true;
+                    break;
 
-            case "(":
-                operator.push(char);
-                expectingOperand = true;
-                break;
+                case "(":
+                    operator.push(char);
+                    expectingOperand = true;
+                    break;
 
-            case ")":
-                handleCloseBracket();
-                expectingOperand = false;
-                break;
+                case ")":
+                    handleCloseBracket();
+                    expectingOperand = false;
+                    break;
 
-            case "!":
-                if (expectingOperand) {
-                    throw new Error("Invalid expression");
-                }
-                handleFactorial();
-                expectingOperand = false;
-                break;
+                case "!":
+                    if (expectingOperand) {
+                        throw new Error("Invalid expression");
+                    }
+                    handleFactorial();
+                    expectingOperand = false;
+                    break;
 
-            default:
-                throw new Error("Invalid operator: " + char);
+                default:
+                    throw new Error("Invalid operator: " + char);
+            }
+        } catch (err) {
+            const error = err instanceof Error ? err.message : String(err);
+            console.error(error);
         }
     }
 
     function handleFactorial(): void {
-        const val = operand.pop();
+        try {
+            const val = operand.pop();
 
-        if (val === undefined || val < 0) {
-            throw new Error("Factorial of negative number not allowed");
+            if (val === undefined || val < 0) {
+                throw new Error("Factorial of negative number not allowed");
+            }
+
+            operand.push(factorial(val));
+        } catch (err) {
+            console.error(err);
         }
-
-        operand.push(factorial(val));
     }
 
     function handleOperations(char: Operator): void {
@@ -146,8 +158,8 @@ function calculation(input: string): number {
 
                 if (top === undefined || top === "(") break;
 
-                const topPrecedence = precedence.get(top) ;
-                const currPrecedence = precedence.get(char) ;
+                const topPrecedence = precedence.get(top);
+                const currPrecedence = precedence.get(char);
 
                 if (topPrecedence === undefined) {
                     throw new Error("Invalid operator");
@@ -157,7 +169,10 @@ function calculation(input: string): number {
                 }
 
                 if (topPrecedence >= currPrecedence) {
-                    const op = operator.pop()!;
+                    const op = operator.pop();
+                    if (!op) {
+                        throw new Error("Operator not found in Precendence");
+                    }
                     applyBinary(op);
                 } else {
                     break;
@@ -171,31 +186,39 @@ function calculation(input: string): number {
     }
 
     function handleCloseBracket(): void {
-        if (!operator.includes("(")) {
-            throw new Error("Mismatched brackets");
-        }
+        try {
+            if (!operator.includes("(")) {
+                throw new Error("Mismatched brackets");
+            }
 
-        while (operator.length && operator[operator.length - 1] !== "(") {
-            const op = operator.pop();
-            applyBinary(op as string);
-        }
+            while (operator.length && operator[operator.length - 1] !== "(") {
+                const op = operator.pop();
+                applyBinary(op as string);
+            }
 
-        operator.pop();
+            operator.pop();
+        } catch (err) {
+            console.error(err);
+        }
     }
 
     function applyBinary(op: string): void {
-        if (operand.length < 2) {
-            throw new Error("Invalid expression");
+        try {
+            if (operand.length < 2) {
+                throw new Error("Invalid expression");
+            }
+
+            const val2 = operand.pop();
+            const val1 = operand.pop();
+
+            if (val1 === undefined || val2 === undefined) {
+                throw new Error("Invalid expression");
+            }
+
+            operand.push(evaluate(op, val1, val2));
+        } catch (err) {
+            console.error(err);
         }
-
-        const val2 = operand.pop();
-        const val1 = operand.pop();
-
-        if (val1 === undefined || val2 === undefined) {
-            throw new Error("Invalid expression");
-        }
-
-        operand.push(evaluate(op, val1, val2));
     }
 
     function evaluate(
@@ -203,34 +226,44 @@ function calculation(input: string): number {
         operand1: number,
         operand2: number,
     ): number {
-        switch (operator) {
-            case "+":
-                return operand1 + operand2;
-            case "-":
-                return operand1 - operand2;
-            case "*":
-                return operand1 * operand2;
-            case "/":
-                if (operand2 === 0) {
-                    throw new Error("Division by zero");
-                }
-                return operand1 / operand2;
-            case "%":
-                return operand1 % operand2;
-            case "^":
-                return Math.pow(operand1, operand2);
-            default:
-                throw new Error("Unknown operator: " + operator);
+        try {
+            switch (operator) {
+                case "+":
+                    return operand1 + operand2;
+                case "-":
+                    return operand1 - operand2;
+                case "*":
+                    return operand1 * operand2;
+                case "/":
+                    if (operand2 === 0) {
+                        throw new Error("Division by zero");
+                    }
+                    return operand1 / operand2;
+                case "%":
+                    return operand1 % operand2;
+                case "^":
+                    return Math.pow(operand1, operand2);
+                default:
+                    throw new Error("Unknown operator: " + operator);
+            }
+        } catch (err) {
+            const error = err instanceof Error ? err.message : String(err);
+            throw new Error(error);
         }
     }
 
     function factorial(n: number): number {
-        if (n < 0) throw new Error("Invalid factorial");
-        if (!Number.isInteger(n))
-            throw new Error("Factorial only works with integers");
-        let res: number = 1;
-        for (let i = 2; i <= n; i++) res *= i;
-        return res;
+        try {
+            if (n < 0) throw new Error("Invalid factorial");
+            if (!Number.isInteger(n))
+                throw new Error("Factorial only works with integers");
+            let res: number = 1;
+            for (let i = 2; i <= n; i++) res *= i;
+            return res;
+        } catch (err) {
+            const error = err instanceof Error ? err.message : String(err);
+            throw new Error(error);
+        }
     }
 }
 
