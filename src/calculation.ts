@@ -1,222 +1,237 @@
 declare global {
-  interface Array<T> {
-    isEmpty(): boolean;
-  }
+    interface Array<T> {
+        isEmpty(): boolean;
+    }
 }
 
 Array.prototype.isEmpty = function <T>(this: T[]): boolean {
-  return this.length === 0;
+    return this.length === 0;
 };
 type Operator = "+" | "-" | "*" | "/" | "%" | "^" | "(" | ")";
 
 const precedence = new Map<Operator, number>([
-  ["^", 3],
-  ["*", 2],
-  ["/", 2],
-  ["%", 2],
-  ["+", 1],
-  ["-", 1],
-  ["(", 0],
-]as const);
-
+    ["^", 3],
+    ["*", 2],
+    ["/", 2],
+    ["%", 2],
+    ["+", 1],
+    ["-", 1],
+    ["(", 0],
+] as const);
 
 function calculation(input: string): number {
-  const inputArr: string[] = input.split("");
-  const operator: Operator[] = [];
-  const operand: number[] = [];
-  let expectingOperand: boolean = true;
+    const inputArr: string[] = input.split("");
+    const operator: Operator[] = [];
+    const operand: number[] = [];
+    let expectingOperand: boolean = true;
 
-  try {
-    for (let i = 0; i < inputArr.length; i++) {
-      let char: string = inputArr[i] ?? "";
+    try {
+        for (let i = 0; i < inputArr.length; i++) {
+            let char: string = inputArr[i] ?? "";
 
-      if (char === " ") continue;
+            if (char === " ") continue;
 
-      // number / decimal
-      if (
-        !isNaN(Number(char)) ||
-        char === "." ||
-        (expectingOperand && (char === "+" || char === "-"))
-      ) {
-        let num: string = "";
-        // handle unary +/-
-        if (char === "+" || char === "-") {
-          num += char;
-          i++;
-          char = inputArr[i]!;
+            // number / decimal
+            if (
+                !isNaN(Number(char)) ||
+                char === "." ||
+                (expectingOperand && (char === "+" || char === "-"))
+            ) {
+                let num: string = "";
+                // handle unary +/-
+                if (char === "+" || char === "-") {
+                    num += char;
+                    i++;
+                    char = inputArr[i]!;
+                }
+                if (isNaN(Number(char)) && char !== ".") {
+                    throw new Error("Invalid number");
+                }
+                num += char;
+                while (
+                    i + 1 < inputArr.length &&
+                    (!isNaN(Number(inputArr[i + 1])) ||
+                        inputArr[i + 1] === "." ||
+                        inputArr[i + 1]?.toLowerCase() === "e" ||
+                        (inputArr[i + 1] === "-" &&
+                            inputArr[i] &&
+                            inputArr[i]?.toLowerCase() === "e"))
+                ) {
+                    num += inputArr[i + 1];
+                    i++;
+                }
+                // validation for exponential format
+                if (!/^[-+]?\d*\.?\d+(e[-+]?\d+)?$/i.test(num)) {
+                    throw new Error("Invalid number: " + num);
+                }
+                operand.push(Number(num));
+                expectingOperand = false;
+            } else {
+                handleCalculator(char);
+            }
         }
-        if (isNaN(Number(char)) && char !== ".") {
-          throw new Error("Invalid number");
+
+        while (!operator.isEmpty()) {
+            const op = operator.pop();
+
+            if (op === "(") {
+                throw new Error("Mismatched brackets");
+            }
+
+            applyBinary(op as string);
         }
-        num += char;
-        while (
-          i + 1 < inputArr.length &&
-          (
-            !isNaN(Number(inputArr[i + 1])) ||
-            inputArr[i + 1] === "." ||
-            inputArr[i + 1]?.toLowerCase() === "e" ||
-            (inputArr[i + 1] === "-" && inputArr[i] && inputArr[i]?.toLowerCase() === "e")
-          )
-        ) {
-          num += inputArr[i + 1];
-          i++;
+
+        if (operand.length !== 1) {
+            throw new Error("Invalid expression");
         }
-        // validation for exponential format
-        if (!/^[-+]?\d*\.?\d+(e[-+]?\d+)?$/i.test(num)) {
-          throw new Error("Invalid number: " + num);
+
+        return operand[0]!;
+    } catch (err) {
+        const error = err instanceof Error ? err.message : String(err);
+        throw new Error(error);
+    }
+
+    function handleCalculator(char: string): void {
+        switch (char) {
+            case "+":
+            case "-":
+            case "/":
+            case "*":
+            case "%":
+            case "^":
+                if (expectingOperand) {
+                    throw new Error("Invalid expression");
+                }
+                handleOperations(char);
+                expectingOperand = true;
+                break;
+
+            case "(":
+                operator.push(char);
+                expectingOperand = true;
+                break;
+
+            case ")":
+                handleCloseBracket();
+                expectingOperand = false;
+                break;
+
+            case "!":
+                if (expectingOperand) {
+                    throw new Error("Invalid expression");
+                }
+                handleFactorial();
+                expectingOperand = false;
+                break;
+
+            default:
+                throw new Error("Invalid operator: " + char);
         }
-        operand.push(Number(num));
-        expectingOperand = false;
-      } else {
-        handleCalculator(char);
-      }
     }
 
-    while (!operator.isEmpty()) {
-      const op = operator.pop();
+    function handleFactorial(): void {
+        const val = operand.pop();
 
-      if (op === "(") {
-        throw new Error("Mismatched brackets");
-      }
-
-      applyBinary(op as string);
-    }
-
-    if (operand.length !== 1) {
-      throw new Error("Invalid expression");
-    }
-
-    return operand[0]!;
-  } catch (err) {
-    const error = err instanceof Error ? err.message : String(err);
-    throw new Error(error);
-  }
-
-  function handleCalculator(char: string): void {
-    switch (char) {
-      case "+":
-      case "-":
-      case "/":
-      case "*":
-      case "%":
-      case "^":
-        if (expectingOperand) {
-          throw new Error("Invalid expression");
+        if (val === undefined || val < 0) {
+            throw new Error("Factorial of negative number not allowed");
         }
-        handleOperations(char);
-        expectingOperand = true;
-        break;
 
-      case "(":
-        operator.push(char);
-        expectingOperand = true;
-        break;
+        operand.push(factorial(val));
+    }
 
-      case ")":
-        handleCloseBracket();
-        expectingOperand = false;
-        break;
+    function handleOperations(char: Operator): void {
+        try {
+            while (operator.length) {
+                const top = operator[operator.length - 1];
 
-      case "!":
-        if (expectingOperand) {
-          throw new Error("Invalid expression");
+                if (top === undefined || top === "(") break;
+
+                const topPrecedence = precedence.get(top) ;
+                const currPrecedence = precedence.get(char) ;
+
+                if (topPrecedence === undefined) {
+                    throw new Error("Invalid operator");
+                }
+                if (currPrecedence === undefined) {
+                    throw new Error("Invalid operator");
+                }
+
+                if (topPrecedence >= currPrecedence) {
+                    const op = operator.pop()!;
+                    applyBinary(op);
+                } else {
+                    break;
+                }
+            }
+
+            operator.push(char);
+        } catch (err) {
+            console.log(err);
         }
-        handleFactorial();
-        expectingOperand = false;
-        break;
-
-      default:
-        throw new Error("Invalid operator: " + char);
-    }
-  }
-
-  function handleFactorial(): void {
-    const val = operand.pop();
-
-    if (val === undefined || val < 0) {
-      throw new Error("Factorial of negative number not allowed");
     }
 
-    operand.push(factorial(val));
-  }
-
-  function handleOperations(char: Operator): void {
-  while (operator.length) {
-    const top = operator[operator.length - 1]; 
-
-    if (top === undefined || top === "(") break;
-
-    const topPrecedence = precedence.get(top) ?? 0;
-    const currPrecedence = precedence.get(char) ?? 0;
-
-    if (topPrecedence >= currPrecedence) {
-      const op = operator.pop()!; 
-      applyBinary(op);
-    } else {
-      break;
-    }
-  }
-
-    operator.push(char);
-  }
-
-  function handleCloseBracket(): void {
-    if (!operator.includes("(")) {
-      throw new Error("Mismatched brackets");
-    }
-
-    while (operator.length && operator[operator.length - 1] !== "(") {
-      const op = operator.pop();
-      applyBinary(op as string);
-    }
-
-    operator.pop();
-  }
-
-  function applyBinary(op: string): void {
-    if (operand.length < 2) {
-      throw new Error("Invalid expression");
-    }
-
-    const val2 = operand.pop();
-    const val1 = operand.pop();
-
-    if (val1 === undefined || val2 === undefined) {
-      throw new Error("Invalid expression");
-    }
-
-    operand.push(evaluate(op, val1, val2));
-  }
-
-  function evaluate(operator: string, operand1: number, operand2: number): number {
-    switch (operator) {
-      case "+":
-        return operand1 + operand2;
-      case "-":
-        return operand1 - operand2;
-      case "*":
-        return operand1 * operand2;
-      case "/":
-        if (operand2 === 0) {
-          throw new Error("Division by zero");
+    function handleCloseBracket(): void {
+        if (!operator.includes("(")) {
+            throw new Error("Mismatched brackets");
         }
-        return operand1 / operand2;
-      case "%":
-        return operand1 % operand2;
-      case "^":
-        return Math.pow(operand1, operand2);
-      default:
-        throw new Error("Unknown operator: " + operator);
-    }
-  }
 
-  function factorial(n: number): number {
-    if (n < 0) throw new Error("Invalid factorial");
-    if (!Number.isInteger(n)) throw new Error("Factorial only works with integers");
-    let res: number = 1;
-    for (let i = 2; i <= n; i++) res *= i;
-    return res;
-  }
+        while (operator.length && operator[operator.length - 1] !== "(") {
+            const op = operator.pop();
+            applyBinary(op as string);
+        }
+
+        operator.pop();
+    }
+
+    function applyBinary(op: string): void {
+        if (operand.length < 2) {
+            throw new Error("Invalid expression");
+        }
+
+        const val2 = operand.pop();
+        const val1 = operand.pop();
+
+        if (val1 === undefined || val2 === undefined) {
+            throw new Error("Invalid expression");
+        }
+
+        operand.push(evaluate(op, val1, val2));
+    }
+
+    function evaluate(
+        operator: string,
+        operand1: number,
+        operand2: number,
+    ): number {
+        switch (operator) {
+            case "+":
+                return operand1 + operand2;
+            case "-":
+                return operand1 - operand2;
+            case "*":
+                return operand1 * operand2;
+            case "/":
+                if (operand2 === 0) {
+                    throw new Error("Division by zero");
+                }
+                return operand1 / operand2;
+            case "%":
+                return operand1 % operand2;
+            case "^":
+                return Math.pow(operand1, operand2);
+            default:
+                throw new Error("Unknown operator: " + operator);
+        }
+    }
+
+    function factorial(n: number): number {
+        if (n < 0) throw new Error("Invalid factorial");
+        if (!Number.isInteger(n))
+            throw new Error("Factorial only works with integers");
+        let res: number = 1;
+        for (let i = 2; i <= n; i++) res *= i;
+        return res;
+    }
 }
 
 export default calculation;

@@ -162,20 +162,24 @@ function handleKeyDown(e: KeyboardEvent) {
         calculate();
     }
 }
-
+function getValue(key: string) {
+    return sessionStorage.getItem(key);
+}
 function showHistory() {
-    history.innerHTML = "";
+    try {
+        history.innerHTML = "";
 
-    let isEmpty = true;
+        let isEmpty = true;
 
-    for (let i = 0; i < sessionStorage.length; i++) {
-        let key = sessionStorage.key(i);
-        if (key === "IsThisFirstTime_Log_From_LiveServer") continue;
-        let value = function getValue(key: string) {
-            return sessionStorage.getItem(key);
-        };
+        for (let i = 0; i < sessionStorage.length; i++) {
+            let key = sessionStorage.key(i);
+            if (key === "IsThisFirstTime_Log_From_LiveServer") continue;
+            if (!key) {
+                throw new Error("Key not Found");
+            }
+            let value = getValue(key);
 
-        history.innerHTML += `
+            history.innerHTML += `
       <div>
         <b>Question:</b> ${key} <br>
         <b>Result:</b> ${value}
@@ -183,10 +187,13 @@ function showHistory() {
       <br>
     `;
 
-        isEmpty = false;
-    }
-    if (isEmpty) {
-        history.innerHTML = "The history is empty";
+            isEmpty = false;
+        }
+        if (isEmpty) {
+            history.innerHTML = "The history is empty";
+        }
+    } catch (err) {
+        console.log(err);
     }
 }
 
