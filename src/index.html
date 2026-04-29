@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="index.js" type="module" defer></script>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <title>Scientific Calculator</title>
+</head>
+
+<body class="container">
+  <!-- body parent container -->
+  <main class="calculator" id="calculator">
+    <section class="calculator__main" id="calculator-main">
+      <header class="calculator__header" id="header">
+        <i class="icon-hidden fa-solid fa-bars" id="menu-toggle"></i>
+        <h1>Scientific</h1>
+      </header>
+
+      <div class="calculator__display" id="display-container">
+        <input type="text" id="display" class="calculator__input" value="0" readonly />
+      </div>
+
+      <div class="calculator__keys keys" id="keys">
+        <!-- MODES -->
+        <section class="calculator__section calculator__section--modes" id="modes">
+          <button class="calculator__btn blocked" id="deg-btn">DEG</button>
+          <button class="calculator__btn blocked" id="fe-btn">F-E</button>
+        </section>
+
+        <!-- MEMORY -->
+        <section class="calculator__section calculator__section--memory" id="memory">
+          <button class="calculator__btn muted blocked" id="mc">MC</button>
+          <button class="calculator__btn muted blocked" id="mr">MR</button>
+          <button class="calculator__btn blocked" id="mplus">M+</button>
+          <button class="calculator__btn blocked" id="mminus">M-</button>
+          <button class="calculator__btn blocked" id="ms">MS</button>
+        </section>
+
+        <!-- MAIN -->
+        <section class="calculator__section calculator__section--main" id="main-section">
+          <!-- DROPDOWNS -->
+          <div class="calculator__trig" id="trig-container">
+            <div class="calculator__trigonometry" id="trigonometry">
+              <button class="calculator__btn blocked" id="trig-toggle">
+                Trigonometry <i class="fa-solid fa-angle-down"></i>
+              </button>
+              <div class="options" id="trig-options">
+                <button class="calculator__btn bordered">1</button>
+                <button class="calculator__btn bordered">2</button>
+                <button class="calculator__btn bordered">3</button>
+                <button class="calculator__btn bordered">4</button>
+                <button class="calculator__btn bordered">5</button>
+                <button class="calculator__btn bordered">6</button>
+                <button class="calculator__btn bordered">7</button>
+                <button class="calculator__btn bordered">8</button>
+              </div>
+            </div>
+
+            <div class="calculator__functions" id="functions">
+              <button class="calculator__btn blocked" id="func-toggle">
+                Functions <i class="fa-solid fa-angle-down"></i>
+              </button>
+              <div class="options" id="func-options">
+                <button class="calculator__btn bordered">1</button>
+                <button class="calculator__btn bordered">2</button>
+                <button class="calculator__btn bordered">3</button>
+                <button class="calculator__btn bordered">4</button>
+                <button class="calculator__btn bordered">5</button>
+                <button class="calculator__btn bordered">6</button>
+                <button class="calculator__btn bordered">7</button>
+                <button class="calculator__btn bordered">8</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- BUTTON GRID -->
+          <div class="calculator__grid" id="button-grid">
+            <button class="calculator__btn primary " data-value="2nd" disabled>
+              2<sup>nd</sup>
+            </button>
+            <button class="calculator__btn primary" data-value="pi">
+              &pi;
+            </button>
+            <button class="calculator__btn primary" data-value="e">e</button>
+            <button class="calculator__btn primary" data-action="clear">
+              c
+            </button>
+            <button class="calculator__btn primary" data-action="delete">
+              <i class="fa-solid fa-delete-left"></i>
+            </button>
+
+            <button class="calculator__btn primary" data-value="x2">
+              x<sup>2</sup>
+            </button>
+            <button class="calculator__btn primary" data-value="1/x">
+              1/x
+            </button>
+            <button class="calculator__btn primary" data-value="abs">
+              |x|
+            </button>
+            <button class="calculator__btn primary" data-value="exp" disabled>
+              exp
+            </button>
+            <button class="calculator__btn primary" data-value="%">
+              mod
+            </button>
+
+            <button class="calculator__btn primary" data-value="sqrt" disabled>
+              &radic;x
+            </button>
+            <button class="calculator__btn primary" data-value="(">(</button>
+            <button class="calculator__btn primary" data-value=")">)</button>
+            <button class="calculator__btn primary" data-value="fact">
+              n!
+            </button>
+            <button class="calculator__btn primary" data-value="/">/</button>
+
+            <button class="calculator__btn primary" data-value="^">
+              x<sup>y</sup>
+            </button>
+            <button class="calculator__btn primary primary-muted" data-value="7">
+              7
+            </button>
+            <button class="calculator__btn primary primary-muted" data-value="8">
+              8
+            </button>
+            <button class="calculator__btn primary primary-muted" data-value="9">
+              9
+            </button>
+            <button class="calculator__btn primary" data-value="*">X</button>
+
+            <button class="calculator__btn primary" data-value="10^">
+              10<sup>x</sup>
+            </button>
+            <button class="calculator__btn primary primary-muted" data-value="4">
+              4
+            </button>
+            <button class="calculator__btn primary primary-muted" data-value="5">
+              5
+            </button>
+            <button class="calculator__btn primary primary-muted" data-value="6">
+              6
+            </button>
+            <button class="calculator__btn primary" data-value="-">-</button>
+
+            <button class="calculator__btn primary" data-value="log" disabled>
+              log
+            </button>
+            <button class="calculator__btn primary primary-muted" data-value="1">
+              1
+            </button>
+            <button class="calculator__btn primary primary-muted" data-value="2">
+              2
+            </button>
+            <button class="calculator__btn primary primary-muted" data-value="3">
+              3
+            </button>
+            <button class="calculator__btn primary" data-value="+">+</button>
+
+            <button class="calculator__btn primary" data-value="ln" disabled>
+              ln
+            </button>
+            <button class="calculator__btn primary primary-muted" data-value="+/-" disabled>
+              +/-
+            </button>
+            <button class="calculator__btn primary primary-muted" data-value="0">
+              0
+            </button>
+            <button class="calculator__btn primary primary-muted" data-value=".">
+              .
+            </button>
+            <button class="calculator__btn primary equals" id="equals" data-action="calculate">
+              =
+            </button>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <aside class="calculator__history history" id="history">
+      <nav class="history__navigation">
+        <ul class="history__navigation-list">
+          <li><a href="#" id="history-tab">History</a></li>
+        </ul>
+      </nav>
+
+      <div class="history__content" id="history-content"></div>
+    </aside>
+  </main>
+</body>
+
+</html>
